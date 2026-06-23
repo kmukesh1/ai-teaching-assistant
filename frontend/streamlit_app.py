@@ -3,18 +3,33 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 
+try:
+    from app.services.teaching_service import TeachingService
+    teaching = TeachingService()
+except:
+    teaching = None
+
 st.set_page_config(page_title="AI Teaching Assistant", page_icon="🎓", layout="wide")
-st.title("🎓 AI Teaching Assistant")
-st.write("Your personal AI tutor is ready!")
+st.title("🎓 AI Teaching Assistant - Your Personal Tutor")
 
-st.info("This is a simplified version for quick deployment. The full version with all features is in the complete project.")
+st.sidebar.header("Settings")
+provider = st.sidebar.selectbox("AI Model", ["gemini", "demo"])
 
-# Placeholder for full app
-st.write("Upload your notes or ask any question about CS, AI, Math, Physics!")
+mode = st.sidebar.radio("Teaching Mode", ["General Chat", "Explain Concept", "Quiz Generator", "Study Planner"])
 
-query = st.text_input("Ask your question here:")
+query = st.chat_input("Ask anything about CS, AI, Math, Physics...")
+
 if query:
-    st.success("Thank you! In the full version, the AI would answer here using Gemini or your chosen model.")
+    with st.chat_message("user"):
+        st.write(query)
+    with st.chat_message("assistant"):
+        if teaching:
+            if mode == "Explain Concept":
+                response = teaching.explain_concept(query)
+            else:
+                response = teaching.llm.get_response(query)
+        else:
+            response = "Thanks for your question! Add your GEMINI_API_KEY in Secrets to get real AI answers."
+        st.write(response)
 
-st.markdown("---")
-st.caption("Full production version deployed from the complete codebase. Add your GEMINI_API_KEY in app secrets for real AI responses.")
+st.info("Full features (RAG upload, Quiz generation, Assignments, Voice) are in the complete version. This is ready-to-use now!")
